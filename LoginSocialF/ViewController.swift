@@ -12,7 +12,7 @@ import FBSDKLoginKit
 import FacebookCore
 
 class ViewController: UIViewController {
-
+    
     @IBOutlet weak var avatar: UIImageView!
     @IBOutlet var lblName: UILabel!
     
@@ -24,9 +24,9 @@ class ViewController: UIViewController {
         
         setupLoginButton()
         
-//        lblName.text = "Name: (Empty)"
+        //        lblName.text = "Name: (Empty)"
         
-//        let logged = AccessToken.isCurrentAccessTokenActive
+        //        let logged = AccessToken.isCurrentAccessTokenActive
         
         //check if user logged or not log
         if AccessToken.current != nil {
@@ -34,26 +34,28 @@ class ViewController: UIViewController {
             fetchUserProfile()
         } else {
             print("chua dang nhap")
+            avatar.image = UIImage(named: "imagei")
+            lblID.text = ""
+            lblName.text = "Da dang xuat khoi tai khoan"
         }
-    
+        
     }
-
+    
     
     fileprivate func setupLoginButton() {
-          let fbButton = FBLoginButton(permissions: [ .publicProfile , .email , .userFriends])
-          //        fbButton.center = self.view.center
-          self.view.addSubview(fbButton)
-          fbButton.translatesAutoresizingMaskIntoConstraints = false
-          fbButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
-          fbButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-          fbButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
-          fbButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20).isActive = true
+        let fbButton = FBLoginButton(permissions: [ .publicProfile , .email , .userFriends])
+        //        fbButton.center = self.view.center
+        self.view.addSubview(fbButton)
+        fbButton.translatesAutoresizingMaskIntoConstraints = false
+        fbButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fbButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        fbButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        fbButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20).isActive = true
         
         fbButton.addTarget(self, action: #selector(fetchUserProfile), for: .touchUpInside)
-      }
-
+    }
+    
     @objc func fetchUserProfile(){
-        
         //doing to get user data
         let graphReqquest: GraphRequest = GraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture.width(480).height(480)"])
         
@@ -61,18 +63,22 @@ class ViewController: UIViewController {
             if ((error) != nil) { // neu co loi
                 print("Error took place : \(error)")
             } else {
-                print("Ket qua nhan duoc la: \(result)")
-                
+                //                print("Ket qua nhan duoc la: \(result)")
                 for (key, value) in (result as? Dictionary<String, AnyObject>)! {
-                  //  print("key: \(key), value: \(value)")
-                
+                    //  print("key: \(key), value: \(value)")
+                    
                     switch key {
                     case "name":
                         self.lblName.text = "FB Name: \(value as! String)"
                     case "id":
                         self.lblID.text = "FB ID: \(value as! String)"
                     case "picture":
-                        print(value)
+                        guard let data = value["data"] as? Dictionary<String, AnyObject> else { return}
+                        let urlString = data["url"] as! String
+                        let url = URL(string: urlString)
+                        if let source = try? Data(contentsOf: url!) {
+                            self.avatar.image = UIImage(data: source)
+                        }
                     default:
                         return
                     }
@@ -82,7 +88,7 @@ class ViewController: UIViewController {
     }
     
     
-
-
-
+    
+    
+    
 }
